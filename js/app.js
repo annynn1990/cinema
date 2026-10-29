@@ -71,8 +71,8 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
 const sheetLayout = window.matchMedia('(max-width: 900px), (max-height: 720px)');
 const MAX_TICKETS = 8;
 
-const seatName = (seat) => `Row ${ROW_LETTERS[seat.row]} · Seat ${seat.number}`;
-const euros = (value) => `€${value.toFixed(2)}`;
+const seatName = (seat) => `${ROW_LETTERS[seat.row]}排 · ${seat.number}號座位`;
+const taiwanDollars = (value) => `台幣${value.toLocaleString('zh-TW')}`;
 
 async function start() {
   // three.js and the demo's code have loaded.
@@ -136,14 +136,14 @@ async function start() {
 
   function updateSeatUI() {
     const seat = rig.seat;
-    dom.status.textContent = seat ? seatName(seat) : 'Pick a seat to see its view';
+    dom.status.textContent = seat ? seatName(seat) : '選擇座位以查看該座位的視角';
     dom.stand.hidden = !seat;
     dom.add.hidden = !seat;
     if (seat) {
       const inTickets = tickets.has(seat.index);
       dom.add.innerHTML = inTickets
-        ? '✓ <span class="dock__add-long">In your tickets</span><span class="dock__add-short">Added</span>'
-        : `Add<span class="dock__add-price"> · ${euros(priceOf(seat))}</span>`;
+        ? '✓ <span class="dock__add-long">已加入票券</span><span class="dock__add-short">已加入</span>'
+        : `加入<span class="dock__add-price"> · ${taiwanDollars(priceOf(seat))}</span>`;
       dom.add.setAttribute('aria-pressed', inTickets);
     }
     map.setCurrent(seat);
@@ -159,10 +159,10 @@ async function start() {
         const item = document.createElement('li');
         item.className = `ticket${booked ? ' is-booked' : ''}`;
         item.innerHTML = `
-          <button class="ticket__go" type="button" aria-label="Go to ${seatName(seat)}">
+          <button class="ticket__go" type="button" aria-label="前往${seatName(seat)}">
             <span class="ticket__row">${ROW_LETTERS[seat.row]}</span><span class="ticket__seat">${seat.number}</span>
           </button>
-          <button class="ticket__remove" type="button" aria-label="Remove ${seatName(seat)}">×</button>`;
+          <button class="ticket__remove" type="button" aria-label="移除${seatName(seat)}">×</button>`;
         item.querySelector('.ticket__go').addEventListener('click', () => go(seat));
         item.querySelector('.ticket__remove').addEventListener('click', () => toggleTicket(seat));
         return item;
@@ -170,15 +170,15 @@ async function start() {
     );
     dom.ticketsEmpty.hidden = tickets.size > 0;
     const total = [...tickets].reduce((sum, index) => sum + priceOf(SEATS[index]), 0);
-    dom.total.textContent = tickets.size ? `${tickets.size} seat${tickets.size > 1 ? 's' : ''} · ${euros(total)}` : '';
+    dom.total.textContent = tickets.size ? `${tickets.size} 個座位 · ${taiwanDollars(total)}` : '';
     dom.book.disabled = tickets.size === 0 || booked;
-    dom.book.textContent = booked ? 'Booked ✓' : 'Book';
+    dom.book.textContent = booked ? '已預訂 ✓' : '預訂';
     updateSeatUI();
   }
 
   function toggleTicket(seat) {
     if (tickets.has(seat.index)) tickets.delete(seat.index);
-    else if (tickets.size >= MAX_TICKETS) return toast(`Up to ${MAX_TICKETS} seats per booking`);
+    else if (tickets.size >= MAX_TICKETS) return toast(`每次最多可預訂 ${MAX_TICKETS} 個座位`);
     else tickets.add(seat.index);
     booked = false;
     updateTickets();
@@ -241,7 +241,7 @@ async function start() {
     dom.theater.classList.toggle('is-over-seat', free);
     dom.label.classList.toggle('is-visible', !!seat);
     if (seat) {
-      dom.labelText.textContent = free ? seatName(seat) : `${seatName(seat)} · Taken`;
+      dom.labelText.textContent = free ? seatName(seat) : `${seatName(seat)} · 已售出`;
       dom.label.classList.toggle('is-taken', !free);
     }
   }
@@ -258,7 +258,7 @@ async function start() {
     onPreview: (seat) => {
       if (seat) {
         preview.show(seat);
-        dom.previewCaption.textContent = `${seatName(seat)}${isTaken(seat) ? ' · Taken' : ` · ${euros(priceOf(seat))}`}`;
+        dom.previewCaption.textContent = `${seatName(seat)}${isTaken(seat) ? ' · 已售出' : ` · ${taiwanDollars(priceOf(seat))}`}`;
       } else {
         preview.hide();
       }
@@ -356,24 +356,24 @@ async function start() {
     const key = (k) => `<kbd>${k}</kbd>`;
     let items;
     if (!finePointer.matches) {
-      items = ['Tap a seat to fly there', gyro.enabled ? 'Drag or tilt to look around' : 'Drag to look around'];
+      items = ['點選座位即可前往', gyro.enabled ? '拖曳或傾斜裝置以環顧四周' : '拖曳以環顧四周'];
     } else if (rig.seat) {
       items = [
-        `${key('←')}${key('→')} Next seat`,
-        `${key('↑')}${key('↓')} Row`,
-        `${key('A')} Add to tickets`,
-        `${key('Esc')} Back up`,
-        `${key('Drag')} Look around`,
-        `${key('Space')} ${film.playing ? 'Pause' : 'Play'}`,
-        ...(dom.stop.hidden ? [] : [`${key('S')} Stop`]),
+        `${key('←')}${key('→')} 切換座位`,
+        `${key('↑')}${key('↓')} 切換排數`,
+        `${key('A')} 加入票券`,
+        `${key('Esc')} 返回`,
+        `${key('拖曳')} 環顧四周`,
+        `${key('空白鍵')} ${film.playing ? '暫停' : '播放'}`,
+        ...(dom.stop.hidden ? [] : [`${key('S')} 停止`]),
       ];
     } else {
       items = [
-        `${key('Click')} A seat to fly there`,
-        `${key('←')}${key('→')}${key('↑')}${key('↓')} Jump into a seat`,
-        `${key('Drag')} Look around`,
-        `${key('Space')} ${film.playing ? 'Pause' : 'Play'}`,
-        ...(dom.stop.hidden ? [] : [`${key('S')} Stop`]),
+        `${key('點擊')} 座位即可前往`,
+        `${key('←')}${key('→')}${key('↑')}${key('↓')} 前往座位`,
+        `${key('拖曳')} 環顧四周`,
+        `${key('空白鍵')} ${film.playing ? '暫停' : '播放'}`,
+        ...(dom.stop.hidden ? [] : [`${key('S')} 停止`]),
       ];
     }
     dom.keys.innerHTML = items.map((item) => `<span class="keys__item">${item}</span>`).join('');
@@ -387,8 +387,8 @@ async function start() {
   dom.book.addEventListener('click', () => {
     if (!tickets.size) return;
     booked = true;
-    const list = [...tickets].map((i) => SEATS[i].label).join(', ');
-    toast(`Booked ${list} for Charge. Enjoy the film.`);
+    const list = [...tickets].map((i) => seatName(SEATS[i])).join('、');
+    toast(`已為您預訂《Charge》電影的座位：${list}。祝您觀影愉快。`);
     updateTickets();
   });
 
@@ -399,20 +399,20 @@ async function start() {
   setFx(!reducedMotion);
   dom.fx.addEventListener('click', () => {
     setFx(!effects.enabled);
-    toast(effects.enabled ? '4D effects on' : '4D effects off');
+    toast(effects.enabled ? '4D 特效已開啟' : '4D 特效已關閉');
   });
 
   dom.sound.addEventListener('click', () => {
     audio.setMuted(!audio.muted);
     dom.sound.setAttribute('aria-pressed', audio.muted);
-    dom.sound.setAttribute('aria-label', audio.muted ? 'Turn the sound on' : 'Turn the sound off');
+    dom.sound.setAttribute('aria-label', audio.muted ? '開啟音效' : '關閉音效');
   });
 
   if (canTilt()) {
     dom.tilt.hidden = false;
     dom.tilt.addEventListener('click', async () => {
       if (gyro.enabled) gyro.disable();
-      else if (!(await gyro.enable())) return toast('Tilt needs access to motion');
+      else if (!(await gyro.enable())) return toast('需要允許存取動作感應才能使用傾斜控制');
       dom.tilt.setAttribute('aria-pressed', gyro.enabled);
       updateKeys();
     });
@@ -431,7 +431,7 @@ async function start() {
 
   const setPlaying = (playing) => {
     dom.play.classList.toggle('is-playing', playing);
-    dom.play.setAttribute('aria-label', playing ? 'Pause the film' : 'Play the film');
+    dom.play.setAttribute('aria-label', playing ? '暫停電影' : '播放電影');
     updateKeys();
   };
 

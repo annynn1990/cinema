@@ -118,8 +118,8 @@ export const OVERVIEW_TARGET = new Vector3(0, 2.4, 9);
 
 // The best view: about two thirds back, in the middle (rows F to H, seats 8 to 15).
 export const isBest = (seat) => seat.row >= 5 && seat.row <= 7 && seat.number >= 8 && seat.number <= 15;
-export const PRICE = 13;
-export const PRICE_BEST = 15;
+export const PRICE = 800;
+export const PRICE_BEST = 900;
 export const priceOf = (seat) => (isBest(seat) ? PRICE_BEST : PRICE);
 
 // Seats someone else has already booked: small groups, a few more of them in the best rows.

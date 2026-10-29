@@ -28,7 +28,7 @@ export class SeatMap {
     const px = (x) => width / 2 + x * scale;
     const py = (z) => top + (z - minZ) * scale;
 
-    const svg = (this.svg = el('svg', { viewBox: `0 0 ${width} ${height.toFixed(1)}`, class: 'map__svg', role: 'group', 'aria-label': 'Seat map' }));
+    const svg = (this.svg = el('svg', { viewBox: `0 0 ${width} ${height.toFixed(1)}`, class: 'map__svg', role: 'group', 'aria-label': '座位圖' }));
 
     // The screen, a glowing arc above row A.
     const defs = el('defs');
@@ -41,7 +41,7 @@ export class SeatMap {
     svg.append(el('path', { d: arc, class: 'map__screen-glow', filter: 'url(#screen-glow)' }));
     svg.append(el('path', { d: arc, class: 'map__screen' }));
     const label = el('text', { x: width / 2, y: 9, class: 'map__screen-label' });
-    label.textContent = 'SCREEN';
+    label.textContent = '銀幕';
     svg.append(label);
 
     // The best seats, behind them.
@@ -59,7 +59,7 @@ export class SeatMap {
     });
     svg.append(zone);
     const bestLabel = el('text', { x: width / 2, y: Math.min(...by) - pad - 3, class: 'map__best-label' });
-    bestLabel.textContent = 'Best view';
+    bestLabel.textContent = '最佳視野';
     svg.append(bestLabel);
 
     // Row letters at both ends.
@@ -86,7 +86,7 @@ export class SeatMap {
         'data-index': seat.index,
         role: 'button',
         tabindex: seat.index === this.focusIndex ? 0 : -1,
-        'aria-label': `Row ${ROW_LETTERS[seat.row]}, seat ${seat.number}${taken ? ', taken' : ''}${isBest(seat) ? ', best view' : ''}`,
+        'aria-label': `${ROW_LETTERS[seat.row]}排，${seat.number}號座位${taken ? '，已售出' : ''}${isBest(seat) ? '，最佳視野' : ''}`,
       });
       svg.append(node);
       return node;
